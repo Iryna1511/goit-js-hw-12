@@ -1,4 +1,3 @@
-import axios from 'axios';
 import Axios from 'axios';
 
 export async function getImages(query, currentPage) {

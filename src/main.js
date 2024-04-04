@@ -13,20 +13,24 @@ const refs = {
   loaderEl: document.querySelector('.loader'),
   loadMoreBtn: document.querySelector('.load-btn'),
 };
+const lightbox = new SimpleLightbox('.gallery .gallery-link', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
 let queryTrimed;
 let currentPage = 1;
 let maxPage = 0;
 const ppageSize = 15;
-let arrImages;
+let dataImages;
 
 refs.formEl.addEventListener('submit', onFormSubmit);
 refs.loadMoreBtn.addEventListener('click', onLoadMore);
 
 async function onFormSubmit(event) {
   event.preventDefault();
+  lightbox.refresh();
   showLoader();
   galleryEl.innerHTML = '';
-  lightbox.refresh();
 
   queryTrimed = refs.inputEl.value.trim();
   if (queryTrimed === '') {
@@ -40,12 +44,11 @@ async function onFormSubmit(event) {
   currentPage = 1;
 
   try {
-    arrImages = await getImages(queryTrimed, currentPage);
-    maxPage = Math.ceil(arrImages.totalHits / ppageSize);
+    dataImages = await getImages(queryTrimed, currentPage);
+    maxPage = Math.ceil(dataImages.totalHits / ppageSize);
 
-    if (arrImages.hits.length === 0) {
+    if (dataImages.hits.length === 0) {
       hideLoader();
-      checkBtnStatus();
       return iziToast.info({
         title: 'Sorry',
         message:
@@ -54,28 +57,30 @@ async function onFormSubmit(event) {
       });
     }
 
-    createMarkUp(arrImages.hits);
+    createMarkUp(dataImages.hits);
   } catch (error) {
     console.error('Error fetching images:', error);
   } finally {
     hideLoader();
-    checkBtnStatus();
   }
-
+  checkBtnStatus();
   refs.inputEl.value = '';
 }
 
 async function onLoadMore(event) {
   showLoader();
+  lightbox.refresh();
   currentPage += 1;
+
   try {
-    arrImages = await getImages(queryTrimed, currentPage);
-    createMarkUp(arrImages.hits);
+    dataImages = await getImages(queryTrimed, currentPage);
+    createMarkUp(dataImages.hits);
   } catch (error) {
     console.error('Error fetching images:', error);
   } finally {
     hideLoader();
     checkBtnStatus();
+    scrollGallery();
   }
 }
 
@@ -94,16 +99,27 @@ function hideBtnLoad() {
 function checkBtnStatus() {
   if (currentPage >= maxPage) {
     hideBtnLoad();
+    return iziToast.info({
+      title: 'Sorry',
+      message: "We're sorry, but you've reached the end of search results.",
+      position: 'topRight',
+    });
   } else {
     showBtnLoad();
   }
 }
 
-const lightbox = new SimpleLightbox('.gallery-link', {
-  captionsData: 'alt',
-  captionDelay: 250,
-});
+function scrollGallery() {
+  const countCards = 2;
+  const height =
+    galleryEl.firstElementChild.getBoundingClientRect().height * countCards;
+
+  scrollBy({
+    top: height,
+    behavior: 'smooth',
+  });
+}
 
 // У файлі main.js напиши всю логіку роботи додатка.
 
-//  && arrImages.hits.length !== 0
+//  && dataImages.hits.length !== 0
