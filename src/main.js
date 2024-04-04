@@ -13,29 +13,39 @@ const refs = {
   loaderEl: document.querySelector('.loader'),
   loadMoreBtn: document.querySelector('.load-btn'),
 };
+let queryTrimed;
+let currentPage = 1;
+let maxPage = 0;
+const ppageSize = 15;
+let arrImages;
 
-refs.formEl.addEventListener('submit', async event => {
+refs.formEl.addEventListener('submit', onFormSubmit);
+refs.loadMoreBtn.addEventListener('click', onLoadMore);
+
+async function onFormSubmit(event) {
   event.preventDefault();
-  refs.loaderEl.classList.add('is-open');
+  showLoader();
   galleryEl.innerHTML = '';
   lightbox.refresh();
 
-  const queryTrimed = refs.inputEl.value.trim();
+  queryTrimed = refs.inputEl.value.trim();
   if (queryTrimed === '') {
-    refs.loaderEl.classList.remove('is-open');
+    hideLoader();
     return iziToast.warning({
       title: 'Caution',
       message: 'Please complete the field!',
       position: 'topRight',
     });
   }
+  currentPage = 1;
 
-  let arrImages;
   try {
-    arrImages = await getImages(queryTrimed, 1);
+    arrImages = await getImages(queryTrimed, currentPage);
+    maxPage = Math.ceil(arrImages.totalHits / ppageSize);
 
     if (arrImages.hits.length === 0) {
-      refs.loaderEl.classList.remove('is-open');
+      hideLoader();
+      checkBtnStatus();
       return iziToast.info({
         title: 'Sorry',
         message:
@@ -45,29 +55,49 @@ refs.formEl.addEventListener('submit', async event => {
     }
 
     createMarkUp(arrImages.hits);
-  } catch {
-    error => {
-      console.error('Error fetching images:', error);
-    };
+  } catch (error) {
+    console.error('Error fetching images:', error);
   } finally {
-    refs.loaderEl.classList.remove('is-open');
-
-    if (
-      arrImages.totalHits >= arrImages.hits.length &&
-      arrImages.hits.length !== 0
-    ) {
-      refs.loadMoreBtn.classList.add('is-open');
-    }
+    hideLoader();
+    checkBtnStatus();
   }
 
-  // todo
-  refs.loadMoreBtn.addEventListener('submit', async e => {
-    const arrImages = await getImages(queryTrimed, 2);
-    createMarkUp(arrImages.hits);
-  });
-
   refs.inputEl.value = '';
-});
+}
+
+async function onLoadMore(event) {
+  showLoader();
+  currentPage += 1;
+  try {
+    arrImages = await getImages(queryTrimed, currentPage);
+    createMarkUp(arrImages.hits);
+  } catch (error) {
+    console.error('Error fetching images:', error);
+  } finally {
+    hideLoader();
+    checkBtnStatus();
+  }
+}
+
+function showLoader() {
+  refs.loaderEl.classList.add('is-open');
+}
+function hideLoader() {
+  refs.loaderEl.classList.remove('is-open');
+}
+function showBtnLoad() {
+  refs.loadMoreBtn.classList.add('is-open');
+}
+function hideBtnLoad() {
+  refs.loadMoreBtn.classList.remove('is-open');
+}
+function checkBtnStatus() {
+  if (currentPage >= maxPage) {
+    hideBtnLoad();
+  } else {
+    showBtnLoad();
+  }
+}
 
 const lightbox = new SimpleLightbox('.gallery-link', {
   captionsData: 'alt',
@@ -75,3 +105,5 @@ const lightbox = new SimpleLightbox('.gallery-link', {
 });
 
 // У файлі main.js напиши всю логіку роботи додатка.
+
+//  && arrImages.hits.length !== 0

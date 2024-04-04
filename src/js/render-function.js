@@ -8,7 +8,7 @@ export function createMarkUp(images) {
       image => `<li class="gallery-item">
   <a class="gallery-link"
     href="${image.largeImageURL}"
-    ><img class="img" 
+    ><img class="img" loading="lazy"
       src="${image.webformatURL}"
       alt="${image.tags}"
   />

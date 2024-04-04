@@ -1,7 +1,6 @@
 import axios from 'axios';
 import Axios from 'axios';
 
-// export let perPage = 1;
 export async function getImages(query, currentPage) {
   const axios = Axios.create({
     baseURL: 'https://pixabay.com/api/',
@@ -17,9 +16,6 @@ export async function getImages(query, currentPage) {
   });
 
   const response = await axios.get('');
-  // todo
-  console.log(response.data);
-  console.log(response.data.totalHits >= response.data.hits.length);
   return response.data;
 }
 
