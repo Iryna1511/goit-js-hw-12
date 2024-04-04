@@ -4,8 +4,6 @@ import './js/render-function.js';
 import { createMarkUp, galleryEl } from './js/render-function.js';
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const refs = {
   formEl: document.querySelector('.form'),
@@ -13,10 +11,7 @@ const refs = {
   loaderEl: document.querySelector('.loader'),
   loadMoreBtn: document.querySelector('.load-btn'),
 };
-const lightbox = new SimpleLightbox('.gallery .gallery-link', {
-  captionsData: 'alt',
-  captionDelay: 250,
-});
+
 let queryTrimed;
 let currentPage = 1;
 let maxPage = 0;
@@ -28,7 +23,6 @@ refs.loadMoreBtn.addEventListener('click', onLoadMore);
 
 async function onFormSubmit(event) {
   event.preventDefault();
-  lightbox.refresh();
   showLoader();
   galleryEl.innerHTML = '';
 
@@ -49,6 +43,7 @@ async function onFormSubmit(event) {
 
     if (dataImages.hits.length === 0) {
       hideLoader();
+      hideBtnLoad();
       return iziToast.info({
         title: 'Sorry',
         message:
@@ -69,7 +64,6 @@ async function onFormSubmit(event) {
 
 async function onLoadMore(event) {
   showLoader();
-  lightbox.refresh();
   currentPage += 1;
 
   try {
@@ -121,5 +115,3 @@ function scrollGallery() {
 }
 
 // У файлі main.js напиши всю логіку роботи додатка.
-
-//  && dataImages.hits.length !== 0
