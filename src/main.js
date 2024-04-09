@@ -63,6 +63,7 @@ async function onFormSubmit(event) {
 }
 
 async function onLoadMore(event) {
+  hideBtnLoad();
   showLoader();
   currentPage += 1;
 
